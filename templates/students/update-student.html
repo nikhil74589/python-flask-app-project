@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>LibraSaaS | Edit Student Profile</title>
+
+<!-- Tailwind CSS + Google Fonts + Font Awesome -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+    .nav-blur {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+    }
+    .input-modern {
+        transition: all 0.2s ease;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    .input-modern:focus {
+        background: white;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15), 0 0 0 1px #4f46e5;
+        border-color: #4f46e5;
+        outline: none;
+    }
+    .floating-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.3;
+        z-index: 0;
+    }
+    .avatar-preview {
+        background: linear-gradient(135deg, #4f46e5, #a855f7);
+        box-shadow: 0 10px 25px -8px rgba(79, 70, 229, 0.5);
+    }
+    .form-section {
+        animation: fadeSlideUp 0.4s ease-out forwards;
+    }
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-900 relative overflow-x-hidden">
+
+<!-- Animated Background Blobs -->
+<div class="floating-blob w-96 h-96 bg-indigo-500 top-20 -left-48"></div>
+<div class="floating-blob w-96 h-96 bg-purple-600 bottom-20 -right-48"></div>
+<div class="floating-blob w-64 h-64 bg-pink-500 top-1/3 left-1/4 opacity-20"></div>
+
+<!-- ==================== SAAS LEVEL NAVIGATION BAR ==================== -->
+<nav class="nav-blur fixed top-0 left-0 w-full z-50 px-6 py-3 md:px-10 transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between">
+        <!-- Logo + Brand -->
+        <div class="flex items-center space-x-3">
+            <div class="relative">
+                <div class="absolute inset-0 bg-indigo-500 rounded-xl blur-md opacity-50"></div>
+                <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-book-open text-white text-xl"></i>
+                </div>
+            </div>
+            <span class="text-white text-2xl font-extrabold tracking-tight">Libra<span class="text-indigo-300">SaaS</span></span>
+            <span class="hidden md:inline-flex ml-2 px-2.5 py-0.5 text-[11px] font-bold bg-indigo-500/30 text-indigo-200 rounded-full border border-indigo-400/30">Edit Mode</span>
+        </div>
+
+        <!-- Desktop Navigation Links -->
+        <div class="hidden md:flex items-center space-x-7 text-gray-300 font-medium">
+            <a href="#" class="hover:text-white transition-all flex items-center gap-2 text-sm group">
+                <i class="fas fa-chart-line text-indigo-400 text-xs group-hover:scale-110 transition"></i> 
+                <span>Dashboard</span>
+            </a>
+            <a href="{{url_for('student.all_students_data')}}" class="hover:text-white transition-all flex items-center gap-2 text-sm group border-b-2 border-indigo-500 pb-0.5 text-white">
+                <i class="fas fa-users text-indigo-400 text-xs"></i> 
+                <span>Students</span>
+            </a>
+            <a href="#" class="hover:text-white transition-all flex items-center gap-2 text-sm group">
+                <i class="fas fa-book text-indigo-400 text-xs"></i> 
+                <span>Catalog</span>
+            </a>
+            <a href="#" class="hover:text-white transition-all flex items-center gap-2 text-sm group">
+                <i class="fas fa-chart-pie text-indigo-400 text-xs"></i> 
+                <span>Analytics</span>
+            </a>
+        </div>
+
+        <!-- Right Side Actions -->
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/15">
+                <i class="fas fa-question-circle text-indigo-300 text-sm"></i>
+                <span class="text-gray-300 text-xs">Help</span>
+            </div>
+            <a href="{{url_for('user_logout')}}" class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition shadow-md flex items-center gap-2">
+                <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Logout</span>
+            </a>
+            <button id="mobileMenuBtn" class="md:hidden text-white text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Dropdown -->
+    <div id="mobileMenu" class="md:hidden hidden mt-4 pt-4 pb-3 border-t border-white/10 space-y-3 text-white text-sm">
+        <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-chart-line w-5"></i> Dashboard</a>
+        <a href="{{url_for('student.all_students_data')}}" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition bg-white/5"><i class="fas fa-users w-5"></i> Students</a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-book w-5"></i> Catalog</a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-chart-pie w-5"></i> Analytics</a>
+        <div class="pt-2 border-t border-white/10">
+            <a href="{{url_for('user_logout')}}" class="flex items-center gap-3 px-3 py-2 text-red-300"><i class="fas fa-sign-out-alt w-5"></i> Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="relative z-10 pt-28 pb-16 px-6 max-w-5xl mx-auto">
+
+    <!-- Breadcrumb Navigation -->
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+        <a href="#" class="hover:text-indigo-300 transition"><i class="fas fa-home"></i> Home</a>
+        <i class="fas fa-chevron-right text-xs"></i>
+        <a href="{{url_for('student.all_students_data')}}" class="hover:text-indigo-300 transition">Students</a>
+        <i class="fas fa-chevron-right text-xs"></i>
+        <a href="{{url_for('student.students_details', id=student.id)}}" class="hover:text-indigo-300 transition">{{ student.stu_name }}</a>
+        <i class="fas fa-chevron-right text-xs"></i>
+        <span class="text-indigo-300">Edit Profile</span>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        
+        <!-- LEFT SIDEBAR: Avatar Preview & Info -->
+        <div class="lg:w-1/3 space-y-5">
+            <div class="glass-card rounded-2xl p-6 text-center backdrop-blur-sm bg-white/95">
+                <div class="avatar-preview w-28 h-28 rounded-full mx-auto flex items-center justify-center text-white text-5xl font-bold border-4 border-white shadow-2xl">
+                    {{ student.stu_name[0]|upper }}
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mt-4">{{ student.stu_name }}</h2>
+                <p class="text-indigo-600 text-sm mt-1">
+                    <i class="fas fa-id-card mr-1"></i> Student ID: LIB-{{ student.id }}
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-100">
+                    <div class="flex justify-center gap-4 text-xs text-gray-500">
+                        <span><i class="far fa-calendar-alt text-indigo-500"></i> Member since 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Helpful Tips Card -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-5 border border-indigo-100">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-lightbulb text-amber-500 text-xl mt-0.5"></i>
+                    <div>
+                        <h4 class="font-semibold text-gray-800 text-sm">Update Guidelines</h4>
+                        <p class="text-gray-600 text-xs mt-1 leading-relaxed">Changes to email or contact info will reflect across library circulation and notification systems.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Links -->
+            <div class="space-y-2">
+                <a href="{{url_for('student.students_details', id=student.id)}}" class="flex items-center gap-3 text-gray-400 hover:text-indigo-400 transition text-sm p-2 rounded-lg hover:bg-white/5">
+                    <i class="fas fa-eye"></i> View Profile
+                </a>
+                <a href="{{url_for('student.all_students_data')}}" class="flex items-center gap-3 text-gray-400 hover:text-indigo-400 transition text-sm p-2 rounded-lg hover:bg-white/5">
+                    <i class="fas fa-arrow-left"></i> Back to Directory
+                </a>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Edit Form (Premium) -->
+        <div class="lg:w-2/3">
+            <div class="glass-card rounded-3xl overflow-hidden bg-white/95">
+                <!-- Header Gradient -->
+                <div class="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                
+                <div class="p-7 md:p-9">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Edit Student Details</h1>
+                            <p class="text-gray-500 text-sm mt-1">Update information and save changes</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
+                            <i class="fas fa-user-edit text-xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Update Form -->
+                    <form action="" method="post" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <!-- Full Name -->
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-700 font-semibold text-sm mb-1.5">
+                                    <i class="fas fa-user text-indigo-500 mr-1"></i> Full Name *
+                                </label>
+                                <input type="text" name="stu_name" value="{{ student.stu_name }}" required
+                                    class="input-modern w-full px-4 py-3 rounded-xl text-gray-800 placeholder:text-gray-400">
+                            </div>
+                            
+                            <!-- Date of Birth -->
+                            <div>
+                                <label class="block text-gray-700 font-semibold text-sm mb-1.5">
+                                    <i class="fas fa-calendar-alt text-indigo-500 mr-1"></i> Date of Birth *
+                                </label>
+                                <input type="date" name="stu_age" value="{{ student.stu_age.strftime('%Y-%m-%d') }}" required
+                                    class="input-modern w-full px-4 py-3 rounded-xl text-gray-800">
+                            </div>
+                            
+                            <!-- Mobile -->
+                            <div>
+                                <label class="block text-gray-700 font-semibold text-sm mb-1.5">
+                                    <i class="fas fa-phone-alt text-indigo-500 mr-1"></i> Mobile Number *
+                                </label>
+                                <input type="tel" name="stu_phone" value="{{ student.stu_phone }}" placeholder="Enter mobile number" required
+                                    class="input-modern w-full px-4 py-3 rounded-xl text-gray-800">
+                            </div>
+                            
+                            <!-- Email -->
+                            <div>
+                                <label class="block text-gray-700 font-semibold text-sm mb-1.5">
+                                    <i class="fas fa-envelope text-indigo-500 mr-1"></i> Email Address *
+                                </label>
+                                <input type="email" name="stu_email" value="{{ student.stu_email }}" required
+                                    class="input-modern w-full px-4 py-3 rounded-xl text-gray-800">
+                            </div>
+                            
+                            <!-- Password (Optional) -->
+                            <div>
+                                <label class="block text-gray-700 font-semibold text-sm mb-1.5">
+                                    <i class="fas fa-lock text-indigo-500 mr-1"></i> New Password (optional)
+                                </label>
+                                <input type="password" name="stu_password" placeholder="Leave blank to keep current"
+                                    class="input-modern w-full px-4 py-3 rounded-xl text-gray-800">
+                                <p class="text-xs text-gray-400 mt-1">Only fill if you want to change password</p>
+                            </div>
+                            
+                            <!-- Address (Full width) -->
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-700 font-semibold text-sm mb-1.5">
+                                    <i class="fas fa-map-marker-alt text-indigo-500 mr-1"></i> Residential Address
+                                </label>
+                                <textarea name="stu_address" rows="3"
+                                    class="input-modern w-full px-4 py-3 rounded-xl resize-none text-gray-800">{{ student.stu_address or '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                            <button type="submit" 
+                                class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3.5 rounded-xl font-bold transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2">
+                                <i class="fas fa-save"></i>
+                                <span>Save Changes</span>
+                                <i class="fas fa-check-circle text-sm"></i>
+                            </button>
+                            <button type="reset" 
+                                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 border border-gray-200">
+                                <i class="fas fa-undo-alt"></i>
+                                <span>Reset Form</span>
+                            </button>
+                        </div>
+
+                        <!-- Security Note -->
+                        <div class="text-center text-xs text-gray-400 pt-3 border-t border-gray-100 mt-2">
+                            <i class="fas fa-shield-alt text-indigo-400 mr-1"></i> All changes are encrypted and logged for audit purposes
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danger Zone (Delete Action) -->
+            <div class="mt-6 bg-white/5 rounded-2xl p-5 border border-red-500/20 backdrop-blur-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-semibold text-sm">Danger Zone</h4>
+                            <p class="text-gray-400 text-xs">Permanently remove this student from the system</p>
+                        </div>
+                    </div>
+                    <a href="{{url_for('student.students_delete', id=student.id)}}" 
+                       onclick="return confirm('⚠️ WARNING: This will permanently delete {{ student.stu_name }} from the database. This action cannot be undone. Continue?')"
+                       class="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-5 py-2 rounded-xl text-sm font-semibold transition text-center">
+                        <i class="fas fa-trash-alt mr-1"></i> Delete Student
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-12 text-center text-gray-500 text-xs border-t border-white/10 pt-6">
+        <p><i class="fas fa-database mr-1"></i> Changes sync across library modules · Audit trail enabled</p>
+    </div>
+</main>
+
+<!-- Mobile Menu Toggle Script -->
+<script>
+    const mobileBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if(mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    }
+    
+    // Optional: Form reset confirmation / validation
+    const resetBtn = document.querySelector('button[type="reset"]');
+    if(resetBtn) {
+        resetBtn.addEventListener('click', (e) => {
+            if(!confirm('Reset all form fields to original values?')) {
+                e.preventDefault();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

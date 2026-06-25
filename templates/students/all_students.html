@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>LibraSaaS | Student Management</title>
+
+<!-- Tailwind CSS + Google Fonts + Font Awesome -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+    body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    .glass-card:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateY(-4px);
+        border-color: rgba(99, 102, 241, 0.5);
+        box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.4);
+    }
+    .nav-blur {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .stat-gradient {
+        background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(168,85,247,0.2) 100%);
+    }
+    .avatar-circle {
+        background: linear-gradient(135deg, #4f46e5, #a855f7);
+        box-shadow: 0 8px 20px -6px rgba(79, 70, 229, 0.4);
+    }
+    .empty-state-icon {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        box-shadow: 0 20px 35px -10px rgba(0,0,0,0.3);
+    }
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #1e1b4b;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #4f46e5;
+        border-radius: 10px;
+    }
+    .animate-float {
+        animation: float 5s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+    }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ==================== SAAS LEVEL NAVIGATION BAR ==================== -->
+<nav class="nav-blur fixed top-0 left-0 w-full z-50 px-6 py-3 md:px-10 transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between">
+        <!-- Logo + Brand -->
+        <div class="flex items-center space-x-3">
+            <div class="relative">
+                <div class="absolute inset-0 bg-indigo-500 rounded-xl blur-md opacity-50"></div>
+                <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-book-open text-white text-xl"></i>
+                </div>
+            </div>
+            <span class="text-white text-2xl font-extrabold tracking-tight">Libra<span class="text-indigo-300">SaaS</span></span>
+            <span class="hidden md:inline-flex ml-2 px-2.5 py-0.5 text-[11px] font-bold bg-indigo-500/30 text-indigo-200 rounded-full border border-indigo-400/30">Student Hub</span>
+        </div>
+
+        <!-- Desktop Navigation Links -->
+        <div class="hidden md:flex items-center space-x-7 text-gray-300 font-medium">
+            
+            <a href="#" class="hover:text-white transition-all flex items-center gap-2 text-sm group border-b-2 border-indigo-500 pb-0.5 text-white">
+                <i class="fas fa-users text-indigo-400 text-xs"></i> 
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="hover:text-white transition-all flex items-center gap-2 text-sm group">
+                <i class="fas fa-book text-indigo-400 text-xs"></i> 
+                <span>Books</span>
+            </a>
+            <a href="#" class="hover:text-white transition-all flex items-center gap-2 text-sm group">
+                <i class="fas fa-chart-pie text-indigo-400 text-xs"></i> 
+                <span>Analytics</span>
+            </a>
+        </div>
+
+        <!-- Right Side: User + Actions -->
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/15">
+                <i class="fas fa-user-circle text-indigo-300"></i>
+                <span class="text-white text-sm font-medium">Admin</span>
+            </div>
+            <a href="{{url_for('user_logout')}}" class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition shadow-md flex items-center gap-2">
+                <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Logout</span>
+            </a>
+            <button id="mobileMenuBtn" class="md:hidden text-white text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu (hidden by default) -->
+    <div id="mobileMenu" class="md:hidden hidden mt-4 pt-4 pb-3 border-t border-white/10 space-y-3 text-white text-sm">
+        <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-chart-line w-5"></i> Dashboard</a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition bg-white/5"><i class="fas fa-users w-5"></i> Students</a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-book w-5"></i> Books</a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-chart-pie w-5"></i> Analytics</a>
+        <div class="pt-2 border-t border-white/10 mt-2">
+            <a href="{{url_for('user_logout')}}" class="flex items-center gap-3 px-3 py-2 text-red-300"><i class="fas fa-sign-out-alt w-5"></i> Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content with offset for fixed navbar -->
+<main class="relative z-10 pt-28 pb-16 px-6 max-w-7xl mx-auto">
+
+    <!-- Background blur accents (SaaS aesthetic) -->
+    <div class="absolute top-20 -left-32 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[120px] opacity-20 pointer-events-none"></div>
+    <div class="absolute bottom-10 -right-32 w-96 h-96 bg-purple-700 rounded-full filter blur-[120px] opacity-20 pointer-events-none"></div>
+
+    {% if students %}
+
+    <!-- Modern Header with Stats -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-5">
+        <div>
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-users text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Student Directory</h1>
+                    <p class="text-indigo-200/80 text-sm mt-1">Manage, track, and engage with your library members</p>
+                </div>
+            </div>
+        </div>
+        
+        <a href="{{url_for('student.student_register')}}">
+            <button class="group bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-indigo-500/30 flex items-center gap-2 transform hover:scale-[1.02]">
+                <i class="fas fa-user-plus"></i>
+                <span>Add New Student</span>
+                <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition"></i>
+            </button>
+        </a>
+    </div>
+
+    <!-- Stats Overview Cards (SaaS metric highlight) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div class="stat-gradient rounded-2xl p-4 border border-white/10 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <i class="fas fa-user-graduate text-indigo-400 text-2xl"></i>
+                <span class="text-2xl font-bold text-white">{{ students|length }}</span>
+            </div>
+            <p class="text-gray-300 text-xs mt-2">Total Students</p>
+        </div>
+        <div class="stat-gradient rounded-2xl p-4 border border-white/10 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <i class="fas fa-book-open text-emerald-400 text-2xl"></i>
+                <span class="text-2xl font-bold text-white">124</span>
+            </div>
+            <p class="text-gray-300 text-xs mt-2">Active Loans</p>
+        </div>
+        <div class="stat-gradient rounded-2xl p-4 border border-white/10 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <i class="fas fa-calendar-check text-amber-400 text-2xl"></i>
+                <span class="text-2xl font-bold text-white">89%</span>
+            </div>
+            <p class="text-gray-300 text-xs mt-2">Return Rate</p>
+        </div>
+        <div class="stat-gradient rounded-2xl p-4 border border-white/10 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <i class="fas fa-chart-line text-rose-400 text-2xl"></i>
+                <span class="text-2xl font-bold text-white">+12</span>
+            </div>
+            <p class="text-gray-300 text-xs mt-2">New This Month</p>
+        </div>
+    </div>
+
+    <!-- Student Grid Cards (Premium Design) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
+        {% for stu in students %}
+        <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 group">
+            <!-- Card Header with abstract gradient -->
+            <div class="h-24 bg-gradient-to-r from-indigo-900/40 to-purple-900/40 relative">
+                <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                    <div class="avatar-circle w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-xl border-2 border-white/20">
+                        {{stu.stu_name[0]|upper}}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-10 pb-5 px-5 text-center">
+                <h2 class="font-bold text-lg text-white">{{stu.stu_name}}</h2>
+                <div class="flex items-center justify-center gap-1 mt-1">
+                    <i class="fas fa-envelope text-indigo-400 text-[11px]"></i>
+                    <p class="text-indigo-200/80 text-sm break-all">{{stu.stu_email}}</p>
+                </div>
+                
+                <!-- Divider -->
+                <div class="border-t border-white/10 my-4"></div>
+                
+                <!-- Action Buttons (Modern style) -->
+                <div class="flex justify-center gap-3">
+                    <a href="{{url_for('student.students_details',id=stu.id)}}" 
+                       class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 text-sm font-medium transition-all">
+                        <i class="fas fa-eye w-4"></i>
+                        <span>View</span>
+                    </a>
+                    <a href="{{url_for('student.students_update',id=stu.id)}}" 
+                       class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/40 text-yellow-300 text-sm font-medium transition-all">
+                        <i class="fas fa-edit w-4"></i>
+                        <span>Edit</span>
+                    </a>
+                    <a href="{{url_for('student.students_delete',id=stu.id)}}" 
+                       onclick="return confirm('⚠️ Permanently delete this student? This action cannot be undone.')"
+                       class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/40 text-red-300 text-sm font-medium transition-all">
+                        <i class="fas fa-trash-alt w-4"></i>
+                        <span>Del</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Card footer micro info -->
+            <div class="px-5 pb-4 text-center">
+                <span class="text-[11px] text-gray-400"><i class="fas fa-id-card mr-1"></i> Member ID: LIB-{{stu.id}}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Quick actions footer (export, bulk) -->
+    <div class="mt-12 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+        <div class="text-gray-400 text-sm flex items-center gap-2">
+            <i class="fas fa-database text-indigo-400"></i>
+            <span>Showing <strong class="text-white">{{ students|length }}</strong> registered students</span>
+        </div>
+        <div class="flex gap-3">
+            <button class="bg-white/5 hover:bg-white/10 text-gray-300 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 border border-white/10">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+            <button class="bg-white/5 hover:bg-white/10 text-gray-300 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 border border-white/10">
+                <i class="fas fa-print"></i> Bulk Actions
+            </button>
+        </div>
+    </div>
+
+    {% else %}
+    
+    <!-- Empty State - Premium SaaS Centered Design -->
+    <div class="flex flex-col items-center justify-center min-h-[70vh] text-center">
+        <div class="empty-state-icon w-32 h-32 rounded-full flex items-center justify-center mb-8 animate-float">
+            <i class="fas fa-user-graduate text-5xl text-indigo-400"></i>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4">No Students Yet</h1>
+        <div class="w-24 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mb-6"></div>
+        <p class="text-indigo-200/80 text-lg max-w-md mb-8">
+            Your library directory is waiting. Add your first student to start tracking memberships, book loans, and insights.
+        </p>
+        <a href="{{url_for('student.student_register')}}">
+            <button class="group bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-indigo-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-3">
+                <i class="fas fa-user-plus fa-lg"></i>
+                <span>Add Your First Student</span>
+                <i class="fas fa-arrow-right group-hover:translate-x-1 transition"></i>
+            </button>
+        </a>
+        
+        <!-- Help tip -->
+        <div class="mt-12 p-4 rounded-2xl bg-white/5 border border-white/10 max-w-md">
+            <i class="fas fa-lightbulb text-amber-400 mr-2"></i>
+            <span class="text-gray-300 text-sm">Pro tip: Student profiles give access to book borrowing history and automated reminders.</span>
+        </div>
+    </div>
+    
+    {% endif %}
+
+    <!-- Subtle footer / meta info -->
+    <div class="mt-16 text-center text-gray-500 text-xs border-t border-white/10 pt-6">
+        <p><i class="fas fa-shield-alt mr-1"></i> Encrypted student data · Real-time sync · GDPR compliant</p>
+    </div>
+</main>
+
+<!-- Mobile Menu Toggle Script -->
+<script>
+    const mobileBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if(mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    }
+    
+    // Feather icons alternative - just FontAwesome used already, but ensure any dynamic icons if needed
+    // No extra libs necessary.
+</script>
+
+<!-- Additional Animation for cards on load -->
+<style>
+    .glass-card {
+        opacity: 0;
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .glass-card:nth-child(1) { animation-delay: 0.02s; }
+    .glass-card:nth-child(2) { animation-delay: 0.05s; }
+    .glass-card:nth-child(3) { animation-delay: 0.08s; }
+    .glass-card:nth-child(4) { animation-delay: 0.11s; }
+    .glass-card:nth-child(5) { animation-delay: 0.14s; }
+    .glass-card:nth-child(6) { animation-delay: 0.17s; }
+    .glass-card:nth-child(7) { animation-delay: 0.20s; }
+    .glass-card:nth-child(8) { animation-delay: 0.23s; }
+</style>
+</body>
+</html>

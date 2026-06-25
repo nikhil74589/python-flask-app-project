@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LibraSaaS | Secure Sign In</title>
+    <!-- Tailwind CSS + Google Fonts + Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-morph {
+            background: rgba(15, 25, 45, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .nav-blur {
+            background: rgba(10, 20, 35, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.6);
+            border-color: #6366f1;
+        }
+        .bg-gradient-radial {
+            background: radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.15), transparent 70%);
+        }
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .pulse-slow {
+            animation: pulseSlow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulseSlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-[#0f172a] to-indigo-950 relative overflow-x-hidden">
+
+    <!-- Animated background blobs (SaaS aesthetic) -->
+    <div class="absolute top-0 -left-40 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-pulse-slow"></div>
+    <div class="absolute bottom-0 -right-40 w-96 h-96 bg-purple-700 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+    <div class="absolute top-1/3 left-1/2 w-80 h-80 bg-pink-600 rounded-full filter blur-[90px] opacity-20 -translate-x-1/2"></div>
+
+    <!-- ==================== SAAS LEVEL NAVIGATION BAR ==================== -->
+    <nav class="nav-blur fixed top-0 left-0 w-full z-50 px-6 py-3 md:px-10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between">
+            <!-- Brand Logo + Name -->
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-indigo-500 rounded-xl blur-md opacity-50"></div>
+                    <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-book-open text-white text-xl"></i>
+                    </div>
+                </div>
+                <span class="text-white text-2xl font-extrabold tracking-tight">Your<span class="text-indigo-300">Library</span></span>
+            </div>
+
+            <!-- Desktop Navigation Links -->
+            <div class="hidden md:flex items-center space-x-7 text-gray-300 font-medium">
+               
+        
+            </div>
+
+            <!-- Right side - Support & CTA (dynamic feel) -->
+            <div class="flex items-center gap-4">
+                
+                <!-- Demo / Signup link -->
+                <a href="{{url_for('student.student_register')}}" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-semibold transition flex items-center gap-2 border border-white/15">
+                    <i class="fas fa-rocket text-indigo-300"></i> Get Started
+                </a>
+                <!-- Mobile menu button -->
+                <button id="mobileMenuBtn" class="md:hidden text-white text-2xl focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown Menu (hidden by default) -->
+        <div id="mobileMenu" class="md:hidden hidden mt-4 pt-4 pb-3 border-t border-white/10 space-y-3 text-white text-sm">
+            <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-chart-line w-5"></i> Dashboard</a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-users w-5"></i> Members</a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-book w-5"></i> Catalog</a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-crown w-5"></i> Pricing</a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-xl transition"><i class="fas fa-headset w-5"></i> Support</a>
+        </div>
+    </nav>
+
+    <!-- Main Content - Login Section (Centered | SaaS Grade UI) -->
+    <main class="relative z-10 min-h-screen flex items-center justify-center px-6 pt-28 pb-20">
+        <div class="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
+            
+            <!-- Left Side: Brand Messaging & Features (SaaS Hero) -->
+            <div class="flex-1 text-center lg:text-left space-y-6 animate__animated fadeInLeft">
+                <div class="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-4 py-1.5 border border-white/10 mb-2">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-xs text-indigo-200 font-medium">Secure access · v3.0</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight">
+                    Welcome back to <br>
+                    <span class="bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">Intelligent Library</span>
+                </h1>
+                <p class="text-gray-300 text-lg max-w-lg mx-auto lg:mx-0">
+                    Access your smart library dashboard, manage circulation, student records, and AI-powered analytics — all in one place.
+                </p>
+                
+                <!-- Feature list (SaaS style) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 max-w-md mx-auto lg:mx-0">
+                    <div class="flex items-center gap-3 text-gray-200 text-sm bg-white/5 rounded-xl p-3 border border-white/5">
+                        <i class="fas fa-fingerprint text-indigo-400 text-lg"></i>
+                        <span>Role-based access</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-gray-200 text-sm bg-white/5 rounded-xl p-3 border border-white/5">
+                        <i class="fas fa-chart-simple text-emerald-400 text-lg"></i>
+                        <span>Real-time analytics</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-gray-200 text-sm bg-white/5 rounded-xl p-3 border border-white/5">
+                        <i class="fas fa-cloud-arrow-up text-purple-400 text-lg"></i>
+                        <span>Cloud sync</span>
+                    </div>
+                    
+                </div>
+                
+                <!-- Trust Badge -->
+                <div class="flex items-center gap-4 pt-4 justify-center lg:justify-start">
+                    <div class="flex -space-x-2">
+                        <div class="w-7 h-7 rounded-full bg-indigo-600 border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold text-white">✓</div>
+                        <div class="w-7 h-7 rounded-full bg-purple-600 border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold text-white">🔒</div>
+                        <div class="w-7 h-7 rounded-full bg-pink-600 border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold text-white">⭐</div>
+                    </div>
+                    <span class="text-gray-400 text-xs">Trusted by 500+ institutions</span>
+                </div>
+            </div>
+
+            <!-- Right Side: Premium Login Card (Glassmorphism + Form) -->
+            <div class="flex-1 w-full max-w-md lg:max-w-lg">
+                <div class="glass-morph rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 floating-card border border-white/20">
+                    <!-- Card Header gradient accent -->
+                    <div class="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                    <div class="p-8 md:p-10">
+                        <!-- Icon + Title -->
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 class="text-2xl md:text-3xl font-bold text-white">Sign In</h2>
+                                <p class="text-gray-400 text-sm mt-1">Access your library dashboard</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-300 text-2xl">
+                                <i class="fas fa-key"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Login Form with POST method (dynamic / same URL) -->
+                        <form action="" method="post" class="space-y-6">
+                            <!-- Email Field with icon -->
+                            <div class="space-y-2">
+                                <label class="text-gray-300 text-sm font-medium flex items-center gap-2">
+                                    <i class="fas fa-envelope text-indigo-400 text-xs"></i> 
+                                    Email Address
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <input 
+                                        type="email" 
+                                        name="user_email" 
+                                        required
+                                        class="w-full bg-white/5 border border-white/20 rounded-xl py-3.5 pl-10 pr-4 text-white placeholder:text-gray-400 focus:outline-none focus:border-indigo-500 transition-all duration-200 input-glow"
+                                        placeholder="librarian@libra.com"
+                                    >
+                                </div>
+                            </div>
+                            
+                            <!-- Password Field -->
+                            <div class="space-y-2">
+                                <label class="text-gray-300 text-sm font-medium flex items-center justify-between">
+                                    <span class="flex items-center gap-2"><i class="fas fa-lock text-indigo-400 text-xs"></i> Password</span>
+                                    <a href="#" class="text-xs text-indigo-400 hover:text-indigo-300 transition">Forgot?</a>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <input 
+                                        type="password" 
+                                        name="user_pass" 
+                                        required
+                                        class="w-full bg-white/5 border border-white/20 rounded-xl py-3.5 pl-10 pr-12 text-white placeholder:text-gray-400 focus:outline-none focus:border-indigo-500 transition-all duration-200 input-glow"
+                                        placeholder="••••••••"
+                                    >
+                                    <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition toggle-password">
+                                        <i class="fas fa-eye-slash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Extra Options (Remember + Demo) -->
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-white/30 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0">
+                                    <span class="text-sm text-gray-300">Keep me signed in</span>
+                                </label>
+                                <a href="#" class="text-xs text-gray-400 hover:text-indigo-300 transition">Need help?</a>
+                            </div>
+                            
+                            <!-- Submit Button (CTA) -->
+                            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 group">
+                                <span>Login to Dashboard</span>
+                                <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                            </button>
+                            
+                            <!-- Divider -->
+                            <div class="relative my-4">
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="w-full border-t border-white/10"></div>
+                                </div>
+                               
+                            </div>
+                            
+                            <!-- Demo / Signup Link -->
+                            <div class="text-center">
+                                <a href="{{url_for('student.student_register')}}" class="inline-flex items-center gap-2 text-indigo-300 hover:text-indigo-200 text-sm font-medium transition">
+                                    Create an account <i class="fas fa-user-plus"></i>
+                                </a>
+                              
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Additional Access Hint (SaaS Footer inside main) -->
+                
+            </div>
+        </div>
+    </main>
+    
+    <!-- Simple Footer with SaaS vibe -->
+    <footer class="relative z-10 border-t border-white/10 py-6 text-center text-gray-500 text-xs mt-8 backdrop-blur-sm">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-3">
+            <span>© 2025 LibraSaaS — Intelligent Library Infrastructure</span>
+            <div class="flex gap-5">
+                <a href="#" class="hover:text-white transition">Privacy</a>
+                <a href="#" class="hover:text-white transition">Terms</a>
+                <a href="#" class="hover:text-white transition">Security</a>
+                <a href="#" class="hover:text-white transition"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu Toggle + Password Visibility Toggle -->
+    <script>
+        // Mobile menu toggle
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        if(mobileBtn && mobileMenu) {
+            mobileBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            // Close menu on link click (optional)
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        }
+        
+        // Password visibility toggle (multiple if needed)
+        const toggleBtns = document.querySelectorAll('.toggle-password');
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const passwordInput = this.closest('.relative').querySelector('input[type="password"], input[type="text"]');
+                if(passwordInput) {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    const icon = this.querySelector('i');
+                    if(icon) {
+                        icon.classList.toggle('fa-eye-slash');
+                        icon.classList.toggle('fa-eye');
+                    }
+                }
+            });
+        });
+    </script>
+    <style>
+        /* Custom scroll & additional smoothness */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 10px;
+        }
+        .animate-pulse-slow {
+            animation: pulseSlow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulseSlow {
+            0%, 100% { opacity: 0.2; transform: scale(1);}
+            50% { opacity: 0.45; transform: scale(1.05);}
+        }
+    </style>
+</body>
+</html>

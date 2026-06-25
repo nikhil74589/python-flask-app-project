@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Library | Intelligent Library Dashboard</title>
+
+<!-- Tailwind + Fonts + Additional CSS for Glassmorphism -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome 6 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        transition: all 0.25s ease;
+    }
+    .glass-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.4);
+        border-color: rgba(139, 92, 246, 0.5);
+        background: rgba(255, 255, 255, 0.12);
+    }
+    .nav-blur {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .stat-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .feature-icon {
+        background: linear-gradient(135deg, #4f46e5, #a855f7);
+        box-shadow: 0 8px 20px -6px rgba(79, 70, 229, 0.4);
+    }
+    .student-row {
+        transition: all 0.2s ease;
+    }
+    .student-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .flash-message {
+        animation: slideDown 0.3s ease-out forwards;
+    }
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @keyframes fadeSlideUp {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up {
+        animation: fadeSlideUp 0.4s ease-out forwards;
+    }
+    .student-avatar {
+        background: linear-gradient(135deg, #4f46e5, #818cf8);
+    }
+</style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 min-h-screen antialiased">
+
+    <!-- Flash Messages Container -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-20 right-4 z-50 space-y-2 max-w-md w-full">
+                {% for category, message in messages %}
+                    <div class="flash-message px-4 py-3 rounded-xl shadow-lg backdrop-blur-sm flex items-center gap-3
+                        {% if category == 'success' %}bg-emerald-500/90 border border-emerald-400/50 text-white{% elif category == 'error' %}bg-red-500/90 border border-red-400/50 text-white{% elif category == 'warning' %}bg-amber-500/90 border border-amber-400/50 text-white{% else %}bg-indigo-500/90 border border-indigo-400/50 text-white{% endif %}">
+                        {% if category == 'success' %}<i class="fas fa-check-circle"></i>{% elif category == 'error' %}<i class="fas fa-exclamation-triangle"></i>{% elif category == 'warning' %}<i class="fas fa-exclamation-circle"></i>{% else %}<i class="fas fa-info-circle"></i>{% endif %}
+                        <span class="text-sm">{{ message }}</span>
+                        <button onclick="this.parentElement.remove()" class="ml-auto text-white/70 hover:text-white"><i class="fas fa-times"></i></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- ========== MODERN NAVIGATION BAR (CONDITIONAL LINKS BASED ON LOGIN) ========== -->
+    <nav class="nav-blur fixed top-0 left-0 w-full z-50 px-6 py-3 md:px-10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between">
+            <!-- Logo + brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-book-open text-white text-xl"></i>
+                </div>
+                <span class="text-white text-2xl font-bold tracking-tight">Your<span class="text-indigo-300">Library</span></span>
+                <!-- <span class="hidden md:inline-block ml-2 px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/30 text-indigo-200 rounded-full uppercase tracking-wide">v2.0 · enterprise</span> -->
+            </div>
+
+            <!-- Desktop menu links - CONDITIONAL based on login status -->
+            <div class="hidden md:flex items-center space-x-8 text-gray-200 font-medium">
+                {% if "user_id" in session %}
+                    <!-- Logged in nav links -->
+                   
+                    <a href="{{url_for('student.all_students_data')}}" class="hover:text-white transition flex items-center gap-2 text-sm">
+                        <i class="fas fa-users text-indigo-300 text-xs"></i> All Students
+                    </a>
+                    <a href="{{url_for('student.student_register')}}" class="hover:text-white transition flex items-center gap-2 text-sm">
+                        <i class="fas fa-user-plus text-indigo-300 text-xs"></i> Add Student
+                    </a>
+                    <a href="#" class="hover:text-white transition flex items-center gap-2 text-sm">
+                        <i class="fas fa-book text-indigo-300 text-xs"></i> Book Catalog
+                    </a>
+                    <a href="#" class="hover:text-white transition flex items-center gap-2 text-sm">
+                        <i class="fas fa-chart-pie text-indigo-300 text-xs"></i> Analytics
+                    </a>
+                {% else %}
+                   
+                {% endif %}
+            </div>
+
+            <!-- Auth button & mobile trigger -->
+            <div class="flex items-center gap-4">
+                {% if "user_id" in session %}
+                <div class="hidden md:flex items-center gap-3 bg-white/10 px-4 py-2 rounded-full border border-white/20">
+                    <i class="fas fa-user-circle text-indigo-300"></i>
+                    <span class="text-white text-sm font-medium">{{ session.get("name", "User") }}</span>
+                </div>
+                <a href="{{url_for('user_logout')}}" class="bg-red-500/90 hover:bg-red-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition shadow-md hover:shadow-red-500/20 flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+                {% else %}
+                <a href="{{url_for('user_login')}}" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-2 rounded-full text-sm font-semibold transition shadow-md shadow-indigo-500/30 flex items-center gap-2">
+                    <i class="fas fa-key"></i> Login
+                </a>
+                {% endif %}
+                <button id="mobile-menu-btn" class="md:hidden text-white text-2xl focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile dropdown (conditional links) -->
+        <div id="mobile-menu" class="md:hidden hidden mt-4 pt-3 pb-4 border-t border-white/10 flex flex-col space-y-3 text-white text-sm">
+            {% if "user_id" in session %}
+                <a href="{{url_for('student.all_students_data')}}" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-users w-5"></i> Dashboard</a>
+                <a href="{{url_for('student.student_register')}}" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-user-plus w-5"></i> Add Student</a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-book w-5"></i> Book Catalog</a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-chart-pie w-5"></i> Analytics</a>
+            {% else %}
+                <a href="#" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-home w-5"></i> Home</a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-info-circle w-5"></i> About</a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-rocket w-5"></i> Features</a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1 hover:bg-white/10 rounded-lg"><i class="fas fa-headset w-5"></i> Support</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main content wrapper -->
+    <main class="relative z-10 pt-28 pb-16 px-6 max-w-7xl mx-auto">
+        <!-- Animated blur background accents -->
+        <div class="absolute top-40 -left-20 w-80 h-80 bg-indigo-500 rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
+        <div class="absolute bottom-20 right-10 w-80 h-80 bg-purple-600 rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
+
+        {% if "user_id" in session %}
+        <!-- ========== LOGGED IN DASHBOARD WITH ALL STUDENTS LIST ========== -->
+        
+        <!-- Welcome Header with Stats -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                        Dashboard, <span class="bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent">{{ session.get("name", "User") }}</span>
+                    </h1>
+                    <p class="text-gray-300 mt-2">Manage your library ecosystem from a single command center</p>
+                </div>
+                <a href="{{url_for('student.student_register')}}" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-5 py-2.5 rounded-xl font-semibold transition flex items-center gap-2 shadow-lg shadow-indigo-500/30 w-fit">
+                    <i class="fas fa-user-plus"></i> Register New Student
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div class="stat-card rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                    <i class="fas fa-user-graduate text-indigo-400 text-2xl"></i>
+                    <span class="text-2xl font-bold text-white">{{ students|length if students else 0 }}</span>
+                </div>
+                <p class="text-gray-400 text-xs mt-2">Total Students</p>
+            </div>
+            <div class="stat-card rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                    <i class="fas fa-book-open text-emerald-400 text-2xl"></i>
+                    <span class="text-2xl font-bold text-white">0</span>
+                </div>
+                <p class="text-gray-400 text-xs mt-2">Books Issued</p>
+            </div>
+            <div class="stat-card rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                    <i class="fas fa-clock text-amber-400 text-2xl"></i>
+                    <span class="text-2xl font-bold text-white">0</span>
+                </div>
+                <p class="text-gray-400 text-xs mt-2">Pending Returns</p>
+            </div>
+            <div class="stat-card rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                    <i class="fas fa-chart-line text-rose-400 text-2xl"></i>
+                    <span class="text-2xl font-bold text-white">0</span>
+                </div>
+                <p class="text-gray-400 text-xs mt-2">Active Loans</p>
+            </div>
+        </div>
+
+        <!-- All Students Section (Main Dashboard Content) -->
+        <div class="glass-card rounded-2xl overflow-hidden">
+            <div class="px-6 py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-users text-indigo-400"></i> All Registered Students
+                    </h2>
+                    <p class="text-gray-400 text-sm mt-1">Manage, edit, or view detailed profiles</p>
+                </div>
+                <div class="flex gap-2">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="searchStudent" placeholder="Search students..." class="pl-9 pr-4 py-2 bg-white/10 border border-white/15 rounded-xl text-white placeholder:text-gray-400 text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+            </div>
+            
+            {% if students and students|length > 0 %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/10">
+                        <tr class="text-left text-gray-300 text-sm">
+                            <th class="px-6 py-4 font-semibold">Student</th>
+                            <th class="px-6 py-4 font-semibold">Email</th>
+                            <th class="px-6 py-4 font-semibold">Phone</th>
+                            <th class="px-6 py-4 font-semibold">DOB</th>
+                            <th class="px-6 py-4 font-semibold text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        {% for stu in students %}
+                        <tr class="student-row border-b border-white/5 hover:bg-white/5 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="student-avatar w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                                        {{ stu.stu_name[0]|upper if stu.stu_name else 'S' }}
+                                    </div>
+                                    <div>
+                                        <p class="text-white font-medium">{{ stu.stu_name }}</p>
+                                        <p class="text-gray-400 text-xs">ID: LIB-{{ stu.id }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-300 text-sm">{{ stu.stu_email }}</td>
+                            <td class="px-6 py-4 text-gray-300 text-sm">{{ stu.stu_phone }}</td>
+                            <td class="px-6 py-4 text-gray-300 text-sm">{{ stu.stu_age }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{url_for('student.students_details', id=stu.id)}}" class="p-2 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 transition" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{url_for('student.students_update', id=stu.id)}}" class="p-2 rounded-lg bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 transition" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{url_for('student.students_delete', id=stu.id)}}" onclick="return confirm('⚠️ Permanently delete {{ stu.stu_name }}? This action cannot be undone.')" class="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 transition" title="Delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-6 py-4 border-t border-white/10 flex justify-between items-center text-gray-400 text-sm">
+                <span><i class="fas fa-database mr-1"></i> Showing {{ students|length }} student(s)</span>
+                <span class="text-indigo-400">Last updated: {{ "now" if False else "recently" }}</span>
+            </div>
+            {% else %}
+            <!-- Empty State for Students -->
+            <div class="text-center py-16">
+                <div class="w-24 h-24 mx-auto rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <i class="fas fa-user-graduate text-4xl text-indigo-400"></i>
+                </div>
+                <h3 class="text-white text-xl font-semibold mb-2">No Students Yet</h3>
+                <p class="text-gray-400 text-sm mb-6">Get started by adding your first student to the library system.</p>
+                <a href="{{url_for('student.student_register')}}" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-medium transition">
+                    <i class="fas fa-user-plus"></i> Register Student
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Actions Footer -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-download text-indigo-400"></i>
+                    <span class="text-gray-300 text-sm">Export Student Data</span>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 text-sm"></i>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-bell text-amber-400"></i>
+                    <span class="text-gray-300 text-sm">Send Bulk Notifications</span>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 text-sm"></i>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-chart-line text-emerald-400"></i>
+                    <span class="text-gray-300 text-sm">Analytics Report</span>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 text-sm"></i>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- ========== NOT LOGGED IN: Showcase SaaS-style landing page ========== -->
+        
+        <!-- Hero / Welcome section -->
+        <div class="text-center mb-16 relative">
+            
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
+                Curate. Manage. <span class="bg-gradient-to-r from-indigo-300 to-pink-300 bg-clip-text text-transparent">Inspire.</span>
+            </h1>
+            <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mt-5">
+                The modern SaaS solution for educational libraries. Streamline student enrollment, author records, and book circulation.
+            </p>
+            
+            <!-- Quick stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-12">
+                <div class="stat-card rounded-2xl p-3 text-center">
+                    <i class="fas fa-users text-indigo-400 text-xl mb-1"></i>
+                    <div class="text-white font-bold text-xl">2.4k+</div>
+                    <div class="text-gray-400 text-xs">Active members</div>
+                </div>
+                <div class="stat-card rounded-2xl p-3 text-center">
+                    <i class="fas fa-book text-emerald-400 text-xl mb-1"></i>
+                    <div class="text-white font-bold text-xl">18.7k</div>
+                    <div class="text-gray-400 text-xs">Book collection</div>
+                </div>
+                <div class="stat-card rounded-2xl p-3 text-center">
+                    <i class="fas fa-chalkboard-user text-purple-400 text-xl mb-1"></i>
+                    <div class="text-white font-bold text-xl">342</div>
+                    <div class="text-gray-400 text-xs">Authors onboard</div>
+                </div>
+                <div class="stat-card rounded-2xl p-3 text-center">
+                    <i class="fas fa-calendar-check text-amber-400 text-xl mb-1"></i>
+                    <div class="text-white font-bold text-xl">96%</div>
+                    <div class="text-gray-400 text-xs">Return rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <a href="{{url_for('student.student_register')}}" class="group transform transition-all hover:scale-[1.02]">
+                <div class="glass-card rounded-2xl p-8 border border-indigo-500/30 h-full">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl shadow-xl">
+                            🎓
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-wider bg-indigo-500/30 text-indigo-200 px-3 py-1 rounded-full">New member</span>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-3">Student Registration</h2>
+                    <p class="text-gray-200 mb-5 leading-relaxed">Join the next-gen library network. Get access to thousands of digital and physical resources.</p>
+                    <div class="flex items-center text-indigo-300 font-semibold group-hover:gap-3 gap-2 transition-all">
+                        Get started <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="#" class="group transform transition-all hover:scale-[1.02]">
+                <div class="glass-card rounded-2xl p-8 border border-pink-500/20 h-full">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-3xl shadow-xl">
+                            ✍️
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-wider bg-pink-500/30 text-pink-200 px-3 py-1 rounded-full">Author hub</span>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-3">Author Registry</h2>
+                    <p class="text-gray-200 mb-5 leading-relaxed">Authors can submit works, track citations, and collaborate with librarians.</p>
+                    <div class="flex items-center text-pink-300 font-semibold group-hover:gap-3 gap-2 transition-all">
+                        Learn more <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white/5 rounded-xl p-5 border border-white/5">
+                <i class="fas fa-cloud-upload-alt text-indigo-400 text-2xl mb-3"></i>
+                <h4 class="text-white font-semibold">Cloud Sync</h4>
+                <p class="text-gray-400 text-sm">Real-time data backup and multi-branch library sync.</p>
+            </div>
+            <div class="bg-white/5 rounded-xl p-5 border border-white/5">
+                <i class="fas fa-robot text-purple-400 text-2xl mb-3"></i>
+                <h4 class="text-white font-semibold">AI Assistant</h4>
+                <p class="text-gray-400 text-sm">Smart recommendations & automated late fee reminders.</p>
+            </div>
+            <div class="bg-white/5 rounded-xl p-5 border border-white/5">
+                <i class="fas fa-chart-line text-emerald-400 text-2xl mb-3"></i>
+                <h4 class="text-white font-semibold">Analytics Suite</h4>
+                <p class="text-gray-400 text-sm">Track engagement, popular genres, and student trends.</p>
+            </div>
+        </div>
+
+        <!-- Login CTA -->
+        <div class="mt-12 text-center">
+            <div class="inline-flex flex-wrap gap-4 items-center justify-center">
+                <span class="text-gray-300 text-sm">Already have access?</span>
+                <a href="{{url_for('user_login')}}" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-2.5 rounded-full font-semibold transition shadow-md shadow-indigo-500/30 flex items-center gap-2">
+                    <i class="fas fa-key"></i> Login to Dashboard
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="mt-16 pt-6 border-t border-white/10 text-center text-gray-400 text-xs flex flex-wrap justify-center gap-6">
+            <span>© 2025 LibraSaaS — Enterprise Library Management</span>
+            <span class="flex items-center gap-1"><i class="fas fa-shield-alt text-indigo-400"></i> SOC2 compliant</span>
+            <span class="hidden md:inline-flex">⚡ Real-time analytics</span>
+        </div>
+    </main>
+
+    <!-- Search Functionality for Students Table -->
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if(menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+        const mobileLinks = document.querySelectorAll('#mobile-menu a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(msg => {
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+
+        // Student search functionality
+        const searchInput = document.getElementById('searchStudent');
+        if(searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#studentTableBody tr');
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    </script>
+    <style>
+        @keyframes fadeSlideUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .glass-card, .stat-card, .feature-icon, .nav-blur, main > div {
+            animation: fadeSlideUp 0.5s ease-out forwards;
+        }
+        .student-row {
+            animation: fadeSlideUp 0.3s ease-out forwards;
+        }
+    </style>
+</body>
+</html>
