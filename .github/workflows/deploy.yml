@@ -1,0 +1,49 @@
+name: Deploy LMS App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create SSH Key
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Copy Files
+        run: |
+          scp -o StrictHostKeyChecking=no \
+          -i key.pem \
+          -r . \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/lms-app
+
+      - name: Deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+
+          cd /home/ubuntu/lms-app
+
+          docker stop lms-app || true
+
+          docker rm lms-app || true
+
+          docker build -t lms-app .
+
+          docker run -d \
+            --name lms-app \
+            --restart always \
+            -p 80:5000 \
+            lms-app
+
+          EOF
