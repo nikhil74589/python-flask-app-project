@@ -21,30 +21,31 @@ jobs:
       - name: Copy Files
         run: |
           ssh -o StrictHostKeyChecking=no \
-          -i key.pem \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-          "rm -rf /home/ubuntu/lms-app && mkdir -p /home/ubuntu/lms-app"
+            -i key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "rm -rf /home/ubuntu/lms-app && mkdir -p /home/ubuntu/lms-app"
 
           scp -o StrictHostKeyChecking=no \
-          -i key.pem \
-          app.py \
-          config.py \
-          db.py \
-          Dockerfile \
-          requirements.txt \
-          -r models \
-          -r routes \
-          -r templates \
-          -r utils \
-          -r migrations \
-          -r instance \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/lms-app/
+            -i key.pem \
+            -r \
+            app.py \
+            config.py \
+            db.py \
+            Dockerfile \
+            requirements.txt \
+            models \
+            routes \
+            templates \
+            utils \
+            migrations \
+            instance \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/lms-app/
 
       - name: Deploy
         run: |
           ssh -o StrictHostKeyChecking=no \
-          -i key.pem \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            -i key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
 
           cd /home/ubuntu/lms-app
 
